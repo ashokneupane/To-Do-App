@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 export function TodoForm() {
   const [item, setItem] = useState("");
@@ -29,13 +30,20 @@ export function TodoForm() {
       item.id === id ? { ...item, completed: !item.completed } : item
     );
     setItemList(updatedList);
-    // localStorage.setItem("todoList", JSON.stringify(updatedList));
   }
 
   function deleteToDo(id) {
     const newUpdatedList = itemList.filter((itemList) => itemList.id !== id);
     setItemList(newUpdatedList);
   }
+
+  const {filter} = useParams();
+
+  const filterList = itemList.filter((item) => {
+    if (filter == 'pending') return !item.completed
+    if (filter == 'completed') return item.completed
+    return true
+  })
 
   return (
     <section className="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -54,37 +62,37 @@ export function TodoForm() {
           Add
         </button>
 
-        <ul className="flex flex-wrap text-sm font-medium text-gray-500 justify-center">
-          <li className="me-2">
-            <a
-              href=""
-              className="p-4 inline-block bg-gray-100 active text-blue-600"
-            >
-              All
-            </a>
-          </li>
-          <li className="me-2">
-            <a href="" className="p-4 inline-block">
-              Pending
-            </a>
-          </li>
-          <li className="me-2">
-            <a href="" className="p-4 inline-block">
-              Completed
-            </a>
-          </li>
-        </ul>
+          <ul className="flex flex-wrap text-sm font-medium text-gray-500 justify-center">
+            <li className="me-2">
+              <Link
+                to="/all"
+                className={`p-4 inline-block ${filter == '' || filter == 'all' ? 'bg-gray-100 active text-blue-600' : ''}`}
+              >
+                All
+              </Link>
+            </li>
+            <li className="me-2">
+              <Link to="/pending" className={`p-4 inline-block ${filter == 'pending' ? 'bg-gray-100 active text-blue-600' : ''}`}>
+                Pending
+              </Link>
+            </li>
+            <li className="me-2">
+              <Link to="/completed" className={`p-4 inline-block ${filter == 'completed' ? 'bg-gray-100 active text-blue-600' : ''}`}>
+                Completed
+              </Link>
+            </li>
+          </ul>
 
         <table className="w-full mt-4">
           <tbody>
-            {itemList.map((it) => (
+            {filterList.map((it) => (
               <tr className="border border-gray-200">
                 <td>
                   <input
                     id={it.id}
-                    type="radio"
+                    type="checkbox"
                     onChange={() => changeCompletedStatus(it.id)}
-                    checked={it.checked}
+                    checked={it.completed}
                   ></input>
                 </td>
                 <td key={it.id}>{it.title}</td>
