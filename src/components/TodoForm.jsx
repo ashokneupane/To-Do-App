@@ -1,5 +1,7 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import EditRow from "./EditRow";
 
 export function TodoForm() {
   const [item, setItem] = useState("");
@@ -37,13 +39,31 @@ export function TodoForm() {
     setItemList(newUpdatedList);
   }
 
-  const {filter} = useParams();
+  const { filter } = useParams();
 
   const filterList = itemList.filter((item) => {
-    if (filter == 'pending') return !item.completed
-    if (filter == 'completed') return item.completed
-    return true
-  })
+    if (filter == "pending") return !item.completed;
+    if (filter == "completed") return item.completed;
+    return true;
+  });
+
+  const [editingId, SetEditingId] = useState(null);
+  const [editingText, SetEditingText] = useState("");
+
+  function editToDo(id, title) {
+    SetEditingId(id);
+    SetEditingText(title);
+  }
+
+  function updateToDo(id, title){
+    const parsedRow = JSON.parse(localStorage.getItem("todoList"));
+
+    const updatedList = parsedRow.map((item) =>
+      item.id === id ? { ...item, title: title } : item
+    );
+    setItemList(updatedList);
+    SetEditingId(null)
+  }
 
   return (
     <section className="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -62,49 +82,79 @@ export function TodoForm() {
           Add
         </button>
 
-          <ul className="flex flex-wrap text-sm font-medium text-gray-500 justify-center">
-            <li className="me-2">
-              <Link
-                to="/all"
-                className={`p-4 inline-block ${filter == '' || filter == 'all' ? 'bg-gray-100 active text-blue-600' : ''}`}
-              >
-                All
-              </Link>
-            </li>
-            <li className="me-2">
-              <Link to="/pending" className={`p-4 inline-block ${filter == 'pending' ? 'bg-gray-100 active text-blue-600' : ''}`}>
-                Pending
-              </Link>
-            </li>
-            <li className="me-2">
-              <Link to="/completed" className={`p-4 inline-block ${filter == 'completed' ? 'bg-gray-100 active text-blue-600' : ''}`}>
-                Completed
-              </Link>
-            </li>
-          </ul>
+        <ul className="flex flex-wrap text-sm font-medium text-gray-500 justify-center">
+          <li className="me-2">
+            <Link
+              to="/all"
+              className={`p-4 inline-block ${
+                filter == "" || filter == "all"
+                  ? "bg-gray-100 active text-blue-600"
+                  : ""
+              }`}
+            >
+              All
+            </Link>
+          </li>
+          <li className="me-2">
+            <Link
+              to="/pending"
+              className={`p-4 inline-block ${
+                filter == "pending" ? "bg-gray-100 active text-blue-600" : ""
+              }`}
+            >
+              Pending
+            </Link>
+          </li>
+          <li className="me-2">
+            <Link
+              to="/completed"
+              className={`p-4 inline-block ${
+                filter == "completed" ? "bg-gray-100 active text-blue-600" : ""
+              }`}
+            >
+              Completed
+            </Link>
+          </li>
+        </ul>
 
         <table className="w-full mt-4">
           <tbody>
             {filterList.map((it) => (
-              <tr className="border border-gray-200">
-                <td>
-                  <input
-                    id={it.id}
-                    type="checkbox"
-                    onChange={() => changeCompletedStatus(it.id)}
-                    checked={it.completed}
-                  ></input>
-                </td>
-                <td key={it.id}>{it.title}</td>
-                <td className="p-2 text-right">
-                  <button
-                    className="text-gray-400 hover:text-gray-300"
-                    onClick={() => deleteToDo(it.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+              <React.Fragment key={it.id}>
+                <tr className="border border-gray-200">
+                  <td>
+                    <input
+                      id={it.id}
+                      type="checkbox"
+                      onChange={() => changeCompletedStatus(it.id)}
+                      checked={it.completed}
+                    ></input>
+                  </td>
+                  <td key={it.id}>{it.title}</td>
+                  <td className="p-2 text-right">
+                    <button
+                      className="text-gray-400 hover:text-gray-300 mr-4"
+                      onClick={() => editToDo(it.id, it.title)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="text-gray-400 hover:text-gray-300"
+                      onClick={() => deleteToDo(it.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                {editingId === it.id && (
+                  <EditRow 
+                  id={it.id} 
+                  title={it.title} 
+                  updateToDo = {updateToDo}
+                  cancelEditing ={() => SetEditingId(null)}
+                   />
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
