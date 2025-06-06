@@ -1,7 +1,9 @@
-import React from "react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import EditRow from "./EditRow";
+import { useParams } from "react-router-dom";
+import TodoInput from "./TodoInput";
+import FilterTab from "./FilterTab";
+import TodoList from "./TodoList";
+import { v4 as uuidv4 } from 'uuid';
 
 export function TodoForm() {
   const [item, setItem] = useState("");
@@ -15,9 +17,8 @@ export function TodoForm() {
   }, [itemList]);
 
   function addItem() {
-    const newItem = { id: itemList.length, title: item, completed: false };
+    const newItem = { id: uuidv4(), title: item, completed: false };
     setItemList([...itemList, newItem]);
-    console.log(itemList);
     setItem("");
   }
 
@@ -55,109 +56,36 @@ export function TodoForm() {
     SetEditingText(title);
   }
 
-  function updateToDo(id, title){
+  function updateToDo(id, title) {
     const parsedRow = JSON.parse(localStorage.getItem("todoList"));
 
     const updatedList = parsedRow.map((item) =>
       item.id === id ? { ...item, title: title } : item
     );
     setItemList(updatedList);
-    SetEditingId(null)
+    SetEditingId(null);
   }
 
   return (
     <section className="bg-gray-100 min-h-screen flex items-center justify-center">
       <div className="bg-white shadow rounded text-center p-6 w-full max-w-xl">
-        <input
-          className="border-gray-300 border p-2.5 rounded w-2/3"
-          type="text"
-          placeholder="Add a new Task"
-          value={item}
-          onChange={getValue}
-        ></input>
-        <button
-          className="bg-blue-500 py-2.5 m-2 px-4 rounded text-white hover:bg-blue-800"
-          onClick={addItem}
-        >
-          Add
-        </button>
+        <h1 className="text-3xl font-bold text-blue-600 mb-6 pb-2">
+          To-Do App
+        </h1>
 
-        <ul className="flex flex-wrap text-sm font-medium text-gray-500 justify-center">
-          <li className="me-2">
-            <Link
-              to="/all"
-              className={`p-4 inline-block ${
-                filter == "" || filter == "all"
-                  ? "bg-gray-100 active text-blue-600"
-                  : ""
-              }`}
-            >
-              All
-            </Link>
-          </li>
-          <li className="me-2">
-            <Link
-              to="/pending"
-              className={`p-4 inline-block ${
-                filter == "pending" ? "bg-gray-100 active text-blue-600" : ""
-              }`}
-            >
-              Pending
-            </Link>
-          </li>
-          <li className="me-2">
-            <Link
-              to="/completed"
-              className={`p-4 inline-block ${
-                filter == "completed" ? "bg-gray-100 active text-blue-600" : ""
-              }`}
-            >
-              Completed
-            </Link>
-          </li>
-        </ul>
+        <TodoInput item={item} onChange={getValue} onClick={addItem} />
 
-        <table className="w-full mt-4">
-          <tbody>
-            {filterList.map((it) => (
-              <React.Fragment key={it.id}>
-                <tr className="border border-gray-200">
-                  <td>
-                    <input
-                      id={it.id}
-                      type="checkbox"
-                      onChange={() => changeCompletedStatus(it.id)}
-                      checked={it.completed}
-                    ></input>
-                  </td>
-                  <td key={it.id}>{it.title}</td>
-                  <td className="p-2 text-right">
-                    <button
-                      className="text-gray-400 hover:text-gray-300 mr-4"
-                      onClick={() => editToDo(it.id, it.title)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="text-gray-400 hover:text-gray-300"
-                      onClick={() => deleteToDo(it.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-                {editingId === it.id && (
-                  <EditRow 
-                  id={it.id} 
-                  title={it.title} 
-                  updateToDo = {updateToDo}
-                  cancelEditing ={() => SetEditingId(null)}
-                   />
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+        <FilterTab filter={filter} />
+
+        <TodoList
+          tasks={filterList}
+          editingId={editingId}
+          updateToDo={updateToDo}
+          changeCompletedStatus={changeCompletedStatus}
+          editToDo={editToDo}
+          deleteToDo={deleteToDo}
+          SetEditingId={SetEditingId}
+        />
       </div>
     </section>
   );

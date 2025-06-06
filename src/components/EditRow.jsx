@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-export default function EditRow({id, title, updateToDo, cancelEditing}) {
-    const [titleText,setTitleText] = useState(title);
+export default function EditRow({ id, title, updateToDo, cancelEditing }) {
+  const [titleText, setTitleText] = useState(title);
   return (
     <>
       <tr>
@@ -24,7 +24,7 @@ export default function EditRow({id, title, updateToDo, cancelEditing}) {
           >
             Cancel
           </button>
-          </td>
+        </td>
       </tr>
     </>
   );
